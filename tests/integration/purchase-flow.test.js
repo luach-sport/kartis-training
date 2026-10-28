@@ -2,7 +2,7 @@
 // הרשמה → אימות מייל → פרופיל → מכשיר → רכישה → ביטול → מחיקת חשבון.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocFromServer } from 'firebase/firestore';
 import { makeEnv, seed, showDoc } from '../rules/helpers.js';
 
 globalThis.__KARTIS_EMULATORS__ = true;
@@ -63,7 +63,7 @@ test('full account and purchase flow', async () => {
   assert.equal(fresh.emailVerified, true);
 
   const orderId = await orders.purchase({ uid: user.uid, showId: 'show1', sectionKey: 'regular', qty: 2 });
-  let show = (await getDoc(doc(db, 'shows', 'show1'))).data();
+  let show = (await getDocFromServer(doc(db, 'shows', 'show1'))).data();
   assert.equal(show.sold.regular, 2);
   const order = await once(orders.watchOrder, user.uid, orderId);
   assert.equal(order.status, 'paid');
@@ -75,9 +75,10 @@ test('full account and purchase flow', async () => {
     (err) => err.code === 'app/sold-out');
 
   await orders.cancelOrder(user.uid, orderId);
-  show = (await getDoc(doc(db, 'shows', 'show1'))).data();
+  show = (await getDocFromServer(doc(db, 'shows', 'show1'))).data();
   assert.equal(show.sold.regular, 0);
-  const cancelled = await once(orders.watchOrder, user.uid, orderId);
+  // מהשרת ולא מהעותק המקומי — כדי לוודא שהביטול באמת נשמר בענן
+  const cancelled = (await getDocFromServer(doc(db, 'users', user.uid, 'orders', orderId))).data();
   assert.equal(cancelled.status, 'cancelled');
 
   await profiles.saveProfile(user.uid, { displayName: 'שם חדש', phone: '0521234567', city: 'צפת' });
