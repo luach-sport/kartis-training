@@ -1,0 +1,16 @@
+{
+  "appId": "com.luachsport.kartis",
+  "appName": "כרטיס (אימון)",
+  "webDir": "dist",
+  "backgroundColor": "#0F1024",
+  "android": {
+    "backgroundColor": "#0F1024",
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "FirebaseAuthentication": {
+      "skipNativeAuth": true,
+      "providers": ["google.com"]
+    }
+  }
+}

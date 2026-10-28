@@ -1,0 +1,76 @@
+/* כרטיסים: רשימה בצורת כרטיס עם חירור, ומסך כרטיס גדול עם ברקוד. */
+.ticket-group { display: flex; flex-direction: column; gap: 12px; }
+
+.ticket {
+  --notch: 11px;
+  display: flex; width: 100%; padding: 0; cursor: pointer; text-align: start;
+  border: 0; border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  /* חורים עגולים בשני הצדדים של קו החירור */
+  -webkit-mask: radial-gradient(circle var(--notch) at calc(100% - 104px) 0, transparent 98%, #000) top / 100% 51% no-repeat,
+                radial-gradient(circle var(--notch) at calc(100% - 104px) 100%, transparent 98%, #000) bottom / 100% 51% no-repeat;
+          mask: radial-gradient(circle var(--notch) at calc(100% - 104px) 0, transparent 98%, #000) top / 100% 51% no-repeat,
+                radial-gradient(circle var(--notch) at calc(100% - 104px) 100%, transparent 98%, #000) bottom / 100% 51% no-repeat;
+}
+[dir='rtl'] .ticket {
+  -webkit-mask: radial-gradient(circle var(--notch) at 104px 0, transparent 98%, #000) top / 100% 51% no-repeat,
+                radial-gradient(circle var(--notch) at 104px 100%, transparent 98%, #000) bottom / 100% 51% no-repeat;
+          mask: radial-gradient(circle var(--notch) at 104px 0, transparent 98%, #000) top / 100% 51% no-repeat,
+                radial-gradient(circle var(--notch) at 104px 100%, transparent 98%, #000) bottom / 100% 51% no-repeat;
+}
+.ticket:active { filter: brightness(1.06); }
+.ticket__main { flex: 1; display: flex; gap: 12px; align-items: center; padding: 14px; min-width: 0; }
+.ticket__emoji {
+  width: 52px; height: 52px; border-radius: 15px; flex: none;
+  display: grid; place-items: center; font-size: 28px; background: var(--bg-2);
+}
+.ticket__info { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ticket__title { font-size: 1.02rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ticket__line { font-size: 0.82rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ticket__stub {
+  width: 104px; flex: none;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  padding: 10px 6px;
+  border-inline-start: 2px dashed var(--line);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  text-align: center;
+}
+.ticket__qty { font-weight: 750; font-size: 0.92rem; }
+.ticket__section { font-size: 0.75rem; color: var(--muted); }
+.ticket--cancelled, .ticket--past { opacity: 0.6; }
+.ticket--cancelled .ticket__stub, .ticket--past .ticket__stub { background: var(--surface-2); }
+
+.big-ticket {
+  background: var(--surface);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+}
+.big-ticket__head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 18px;
+  background: var(--accent-grad); color: var(--accent-ink);
+}
+.big-ticket__head .chip { background: rgba(0, 0, 0, 0.18); color: inherit; margin-inline-start: auto; }
+.big-ticket--cancelled .big-ticket__head, .big-ticket--past .big-ticket__head { background: var(--surface-2); color: var(--text); }
+.big-ticket__emoji { font-size: 40px; }
+.big-ticket__title { font-size: 1.2rem; font-weight: 800; line-height: 1.25; }
+.big-ticket__when { font-size: 0.88rem; opacity: 0.85; }
+.big-ticket__qr { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 18px 16px; }
+.qr { border-radius: 14px; background: #fff; padding: 8px; width: 220px; height: 220px; }
+.big-ticket__code { font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 1.2rem; font-weight: 700; letter-spacing: 0.12em; }
+.big-ticket__void {
+  width: 220px; height: 220px; border-radius: 14px; display: grid; place-items: center;
+  background: var(--danger-bg); color: var(--danger); font-weight: 800; font-size: 1.2rem;
+}
+.big-ticket__perf { height: 0; border-top: 2px dashed var(--line); margin: 0 18px; position: relative; }
+.big-ticket__perf::before, .big-ticket__perf::after {
+  content: ''; position: absolute; top: -13px; width: 24px; height: 24px; border-radius: 50%; background: var(--bg);
+}
+.big-ticket__perf::before { inset-inline-start: -31px; }
+.big-ticket__perf::after { inset-inline-end: -31px; }
+.big-ticket__rows { padding: 14px 18px 18px; display: flex; flex-direction: column; gap: 8px; }
+.big-ticket__row { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); }
+.big-ticket__row strong { color: var(--text); text-align: end; }

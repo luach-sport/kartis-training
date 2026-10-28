@@ -1,0 +1,63 @@
+/* צבעים, גדלים וצללים במקום אחד. ברירת מחדל: "במה בלילה" (כהה). במצב בהיר של הטלפון — נייר חם. */
+:root {
+  --bg: #0F1024;
+  --bg-2: #15163A;
+  --surface: #1B1C44;
+  --surface-2: #24265A;
+  --line: rgba(255, 255, 255, 0.09);
+  --text: #F4F1EA;
+  --muted: #A9A8C8;
+  --faint: #6F6E95;
+
+  --accent: #FF6B4A;
+  --accent-2: #FFB547;
+  --accent-ink: #1A0B05;
+  --accent-grad: linear-gradient(135deg, #FF6B4A 0%, #FF8E3C 55%, #FFB547 100%);
+
+  --ok: #3DDC97;
+  --ok-bg: rgba(61, 220, 151, 0.14);
+  --warn: #FFC857;
+  --warn-bg: rgba(255, 200, 87, 0.14);
+  --danger: #FF5470;
+  --danger-bg: rgba(255, 84, 112, 0.14);
+  --info-bg: rgba(140, 150, 255, 0.12);
+
+  --radius: 18px;
+  --radius-sm: 12px;
+  --radius-xs: 8px;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.25);
+
+  --font: 'Rubik Variable', 'Rubik', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  --topbar-h: 56px;
+  --tabbar-h: 66px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #FAF6EF;
+    --bg-2: #F2EBDF;
+    --surface: #FFFFFF;
+    --surface-2: #F6F0E6;
+    --line: rgba(27, 26, 51, 0.10);
+    --text: #1B1A33;
+    --muted: #5F5D7A;
+    --faint: #9A97B2;
+    --accent: #E8512F;
+    --accent-ink: #FFFFFF;
+    --accent-grad: linear-gradient(135deg, #E8512F 0%, #F2742A 55%, #F59E1B 100%);
+    --ok: #128A5A;
+    --ok-bg: rgba(18, 138, 90, 0.10);
+    --warn: #A86A00;
+    --warn-bg: rgba(245, 158, 27, 0.14);
+    --danger: #D22F4B;
+    --danger-bg: rgba(210, 47, 75, 0.09);
+    --info-bg: rgba(80, 90, 200, 0.08);
+    --shadow: 0 10px 30px rgba(60, 40, 20, 0.12);
+    --shadow-sm: 0 4px 14px rgba(60, 40, 20, 0.08);
+    color-scheme: light;
+  }
+}

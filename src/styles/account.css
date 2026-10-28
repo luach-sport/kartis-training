@@ -1,0 +1,37 @@
+/* חשבון, מכשירים וניהול. */
+.profile-card {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+  padding: 22px 16px;
+  background:
+    radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%),
+    var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius);
+}
+.profile-card__name { font-size: 1.3rem; font-weight: 750; margin-top: 4px; }
+.profile-card__chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 4px; }
+
+.devices { display: flex; flex-direction: column; gap: 10px; }
+.device {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--line);
+}
+.device--this { border-color: color-mix(in srgb, var(--ok) 50%, transparent); }
+.device__icon {
+  width: 44px; height: 44px; border-radius: 13px; flex: none;
+  display: grid; place-items: center; background: var(--bg-2); color: var(--muted);
+}
+.device__text { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.device__text .muted { font-size: 0.8rem; }
+
+.tips { margin: 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 0.9rem; }
+
+.admin-list { display: flex; flex-direction: column; gap: 8px; }
+.admin-show {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; border-radius: var(--radius-sm);
+  background: var(--surface); border: 1px solid var(--line);
+}
+.admin-show__emoji { font-size: 28px; }
+.admin-show__text { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.admin-show__text .muted { font-size: 0.8rem; }

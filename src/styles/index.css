@@ -1,0 +1,10 @@
+/* מאחד את כל קבצי העיצוב — כל קובץ אחראי על חלק אחד. */
+@import './tokens.css';
+@import './base.css';
+@import './layout.css';
+@import './components.css';
+@import './forms.css';
+@import './auth.css';
+@import './shows.css';
+@import './tickets.css';
+@import './account.css';

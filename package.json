@@ -1,0 +1,31 @@
+{
+  "name": "kartis-training",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "כרטיס (אימון) — אפליקציית אימון לרכישת כרטיסים להופעות בצורה מדומה, עם חשבונות בענן, התחברות עם גוגל, איפוס סיסמה במייל וסנכרון בין מכשירים",
+  "scripts": {
+    "dev": "vite",
+    "dev:mock": "vite --mode mock",
+    "build": "vite build",
+    "build:mock": "vite build --mode mock --outDir dist-mock",
+    "test": "node --test tests/unit/*.test.js",
+    "test:rules": "firebase emulators:exec --only auth,firestore --project demo-kartis \"node --test --test-concurrency=1 tests/rules/*.test.js tests/integration/*.test.js\""
+  },
+  "dependencies": {
+    "@capacitor-firebase/authentication": "7.5.0",
+    "@capacitor/android": "^7.4.0",
+    "@capacitor/app": "^7.1.0",
+    "@capacitor/core": "^7.4.0",
+    "@capacitor/device": "^7.0.0",
+    "@fontsource-variable/rubik": "^5.2.0",
+    "firebase": "^11.10.0",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.0",
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "firebase-tools": "^14.0.0",
+    "vite": "^7.0.0"
+  }
+}

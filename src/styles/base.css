@@ -1,0 +1,37 @@
+/* בסיס: גופן, צבעי רקע, איפוס קטן. */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+#app { height: 100%; }
+
+h1, h2, h3, p { margin: 0; }
+button { font: inherit; color: inherit; }
+a { color: var(--accent); }
+img { max-width: 100%; display: block; }
+[hidden] { display: none !important; }
+
+.icon { display: inline-flex; flex: none; }
+.icon svg { display: block; }
+
+.muted { color: var(--muted); }
+.center { text-align: center; }
+.fine { font-size: 0.82rem; color: var(--faint); line-height: 1.5; }
+.fine .icon { vertical-align: -2px; display: inline-flex; }
+
+:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; border-radius: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

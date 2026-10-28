@@ -1,0 +1,9 @@
+node_modules/
+dist/
+dist-mock/
+android/
+*.apk
+*.log
+.firebase/
+firebase-debug.log
+firestore-debug.log

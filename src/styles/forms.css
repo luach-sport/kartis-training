@@ -1,0 +1,47 @@
+/* טפסים: שדות, הודעות שגיאה, מד חוזק סיסמה, תיבת סימון. */
+.form { display: flex; flex-direction: column; gap: 14px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field__label { font-size: 0.88rem; font-weight: 600; color: var(--muted); }
+.field__msg { font-size: 0.8rem; color: var(--faint); min-height: 0; }
+.field__msg:empty { display: none; }
+.field.has-error .field__msg { color: var(--danger); }
+.field.has-error .input { border-color: var(--danger); }
+
+.input {
+  width: 100%; min-height: 50px; padding: 12px 14px;
+  border-radius: 14px; border: 1.5px solid var(--line);
+  background: var(--bg-2); color: var(--text);
+  font: inherit; font-size: 1rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+.input:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+.input[dir='ltr'] { text-align: left; }
+.input--readonly { display: flex; align-items: center; color: var(--muted); }
+.input::placeholder { color: var(--faint); }
+
+.field__with-toggle { position: relative; }
+.field__with-toggle .input { padding-inline-end: 50px; }
+.field__toggle {
+  position: absolute; inset-block: 0; inset-inline-end: 4px;
+  width: 44px; border: 0; background: transparent; color: var(--muted); cursor: pointer;
+  display: grid; place-items: center;
+}
+/* בשדה LTR בתוך מסך RTL, הכפתור צריך להיות בצד ימין של השדה */
+.field__with-toggle .input[dir='ltr'] { padding-inline-end: 14px; padding-right: 50px; padding-left: 14px; }
+.field__with-toggle .input[dir='ltr'] ~ .field__toggle { inset-inline-end: auto; right: 4px; left: auto; }
+
+.strength-row { display: flex; align-items: center; gap: 10px; }
+.strength { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; flex: 1; }
+.strength span { height: 5px; border-radius: 4px; background: var(--surface-2); transition: background 0.2s; }
+.strength[data-score='1'] span:nth-child(-n+1) { background: var(--danger); }
+.strength[data-score='2'] span:nth-child(-n+2) { background: var(--warn); }
+.strength[data-score='3'] span:nth-child(-n+3) { background: var(--ok); }
+.strength[data-score='4'] span { background: var(--ok); }
+.strength__label { font-size: 0.78rem; color: var(--muted); min-width: 64px; text-align: end; }
+
+.link { color: var(--accent); font-weight: 600; text-decoration: none; }
+.link--end { align-self: flex-end; font-size: 0.9rem; margin-top: -4px; }
+
+.check-row { display: flex; align-items: center; gap: 10px; font-weight: 550; cursor: pointer; }
+.check { width: 22px; height: 22px; accent-color: var(--danger); }

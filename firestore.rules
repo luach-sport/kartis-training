@@ -1,0 +1,207 @@
+rules_version = '2';
+
+// =====================================================================
+//  כללי האבטחה של "כרטיס (אימון)"
+//  הכללים רצים בשרת של גוגל ולא באפליקציה, ולכן גם מי שמשנה את הקוד
+//  של האפליקציה לא יכול לעקוף אותם. כל מה שלא מותר כאן במפורש — אסור.
+//
+//  מבנה הנתונים:
+//    admins/{uid}                     מנהלים (נוצר ידנית בקונסולה בלבד)
+//    shows/{showId}                   הופעות + כמה כרטיסים נמכרו בכל אזור
+//    users/{uid}                      פרופיל המשתמש
+//    users/{uid}/devices/{deviceId}   המכשירים שמחוברים לחשבון
+//    users/{uid}/orders/{orderId}     ההזמנות (הכרטיסים) של המשתמש
+// =====================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------- עזרים ----------------
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // משתמשי גוגל מאומתים תמיד. משתמשי מייל וסיסמה — רק אחרי שלחצו על הקישור במייל.
+    function emailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function showPath(showId) {
+      return /databases/$(database)/documents/shows/$(showId);
+    }
+
+    function orderPath(uid, orderId) {
+      return /databases/$(database)/documents/users/$(uid)/orders/$(orderId);
+    }
+
+    function str(v, min, max) {
+      return v is string && v.size() >= min && v.size() <= max;
+    }
+
+    // ---------------- מנהלים ----------------
+
+    match /admins/{uid} {
+      // כל משתמש יכול לבדוק רק אם הוא עצמו מנהל. אף אחד לא יכול להפוך את עצמו למנהל.
+      allow get: if isOwner(uid);
+      allow list, write: if false;
+    }
+
+    // ---------------- הופעות ----------------
+
+    function showFields() {
+      return ['title', 'artist', 'venue', 'city', 'startsAt', 'emoji', 'colors',
+              'description', 'active', 'sections', 'sold', 'lastSale', 'createdAt'];
+    }
+
+    function validShow(d) {
+      return d.keys().hasAll(showFields()) && d.keys().hasOnly(showFields())
+        && str(d.title, 1, 80) && str(d.artist, 1, 80)
+        && str(d.venue, 1, 80) && str(d.city, 1, 40)
+        && d.startsAt is timestamp
+        && str(d.emoji, 1, 16)
+        && d.colors is list && d.colors.size() == 2
+        && str(d.description, 0, 600)
+        && d.active is bool
+        && d.sections is map && d.sections.size() >= 1 && d.sections.size() <= 4
+        && d.sold is map
+        && d.sold.keys().hasAll(d.sections.keys()) && d.sold.keys().hasOnly(d.sections.keys())
+        && d.createdAt is timestamp;
+    }
+
+    // מכירה או ביטול של משתמש רגיל: מותר לשנות רק את מונה הכרטיסים שנמכרו,
+    // ורק בדיוק בכמות של הזמנה שנוצרת (או מבוטלת) באותה פעולה עצמה.
+    function validSaleChange(showId) {
+      let before = resource.data;
+      let after = request.resource.data;
+      let opath = orderPath(request.auth.uid, after.lastSale.orderId);
+      let order = getAfter(opath).data;
+      let section = order.section;
+      return signedIn()
+        && after.diff(before).affectedKeys().hasOnly(['sold', 'lastSale'])
+        && after.lastSale.keys().hasOnly(['orderId', 'at'])
+        && after.lastSale.orderId is string
+        && after.lastSale.at == request.time
+        && order.showId == showId
+        && after.sold.diff(before.sold).affectedKeys().hasOnly([section])
+        && after.sold[section] >= 0
+        && after.sold[section] <= before.sections[section].capacity
+        && (
+          // רכישה: ההזמנה נוצרת עכשיו
+          (!exists(opath) && order.status == 'paid'
+            && after.sold[section] == before.sold[section] + order.qty)
+          ||
+          // ביטול: ההזמנה עוברת עכשיו מ"שולם" ל"בוטל"
+          (exists(opath) && get(opath).data.status == 'paid' && order.status == 'cancelled'
+            && after.sold[section] == before.sold[section] - order.qty)
+        );
+    }
+
+    match /shows/{showId} {
+      allow read: if signedIn();
+      allow create: if isAdmin() && validShow(request.resource.data)
+        && request.resource.data.sold.values().toSet().hasOnly([0])
+        && request.resource.data.lastSale == null;
+      allow update: if (isAdmin() && validShow(request.resource.data)
+                        && request.resource.data.sold == resource.data.sold)
+                    || validSaleChange(showId);
+      allow delete: if isAdmin();
+    }
+
+    // ---------------- משתמשים ----------------
+
+    function validProfile(d) {
+      return d.keys().hasAll(['displayName', 'email', 'createdAt', 'updatedAt'])
+        && d.keys().hasOnly(['displayName', 'email', 'phone', 'city', 'createdAt', 'updatedAt'])
+        && str(d.displayName, 1, 60)
+        && d.email == request.auth.token.get('email', null)
+        && (!('phone' in d) || d.phone == '' || (d.phone is string && d.phone.matches('^0[0-9]{8,9}$')))
+        && (!('city' in d) || str(d.city, 0, 40))
+        && d.updatedAt == request.time;
+    }
+
+    function validDevice(d) {
+      return d.keys().hasAll(['name', 'platform', 'model', 'appVersion', 'createdAt', 'lastSeen'])
+        && d.keys().hasOnly(['name', 'platform', 'model', 'appVersion', 'createdAt', 'lastSeen'])
+        && str(d.name, 1, 60) && str(d.platform, 1, 20)
+        && str(d.model, 0, 60) && str(d.appVersion, 1, 20)
+        && d.lastSeen == request.time
+        && (resource == null ? d.createdAt == request.time : d.createdAt == resource.data.createdAt);
+    }
+
+    function orderFields() {
+      return ['showId', 'section', 'sectionName', 'qty', 'unitPrice', 'total', 'status',
+              'code', 'showTitle', 'venue', 'city', 'startsAt', 'emoji', 'createdAt'];
+    }
+
+    // הזמנה חדשה: המחיר, השם והתאריך חייבים להיות בדיוק כמו בהופעה (אי אפשר "להוזיל" כרטיס),
+    // וחייבים להוסיף באותה פעולה את הכמות למונה של ההופעה.
+    function validNewOrder(orderId) {
+      let o = request.resource.data;
+      let show = get(showPath(o.showId)).data;
+      let showAfter = getAfter(showPath(o.showId)).data;
+      let sec = show.sections[o.section];
+      return o.keys().hasAll(orderFields()) && o.keys().hasOnly(orderFields())
+        && o.qty is int && o.qty >= 1 && o.qty <= 6
+        && o.unitPrice == sec.price
+        && o.total == sec.price * o.qty
+        && o.sectionName == sec.name
+        && o.status == 'paid'
+        && str(o.code, 8, 16)
+        && o.showTitle == show.title && o.venue == show.venue && o.city == show.city
+        && o.startsAt == show.startsAt && o.emoji == show.emoji
+        && o.createdAt == request.time
+        && show.active == true
+        && show.startsAt > request.time
+        && showAfter.lastSale.orderId == orderId
+        && showAfter.sold[o.section] == show.sold[o.section] + o.qty;
+    }
+
+    // ביטול: רק לפני ההופעה, ורק אם באותה פעולה מחזירים את הכרטיסים למלאי.
+    function validCancel(orderId) {
+      let before = resource.data;
+      let after = request.resource.data;
+      let show = get(showPath(before.showId)).data;
+      let showAfter = getAfter(showPath(before.showId)).data;
+      return after.diff(before).affectedKeys().hasOnly(['status', 'cancelledAt'])
+        && before.status == 'paid'
+        && after.status == 'cancelled'
+        && after.cancelledAt == request.time
+        && show.startsAt > request.time
+        && showAfter.lastSale.orderId == orderId
+        && showAfter.sold[before.section] == show.sold[before.section] - before.qty;
+    }
+
+    match /users/{uid} {
+      allow get: if isOwner(uid);
+      allow list: if false;
+      allow create: if isOwner(uid) && validProfile(request.resource.data)
+        && request.resource.data.createdAt == request.time;
+      allow update: if isOwner(uid) && validProfile(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isOwner(uid);
+
+      match /devices/{deviceId} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && deviceId.size() <= 64
+          && validDevice(request.resource.data);
+        allow delete: if isOwner(uid);
+      }
+
+      match /orders/{orderId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && emailVerified() && validNewOrder(orderId);
+        allow update: if isOwner(uid) && validCancel(orderId);
+        allow delete: if isOwner(uid);
+      }
+    }
+  }
+}
